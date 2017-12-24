@@ -1,11 +1,12 @@
 const express = require('express');
 const path = require('path');
 const exphbs = require('express-handlebars');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport');
-
+const methodOverride = require('method-override');
 // Load User Model
 require('./models/user');
 
@@ -19,6 +20,9 @@ const story = require('./routes/story');
 // Load Keys
 const keys = require('./config/keys');
 
+// handlebars helpers
+const { trancate, stripTags, formatDate, select } = require('./helpers/hbs');
+
 // Map global promises
 mongoose.Promise = global.Promise;
 // Mongoose Connect
@@ -30,8 +34,24 @@ mongoose.connect(keys.mongoURI, {
 
 const app = express();
 
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+// parse application/json
+app.use(bodyParser.json());
+
+// method override 
+app.use(methodOverride('_method'));
+
+
 // Handlebars Middleware
 app.engine('handlebars', exphbs({
+    helpers: {
+        trancate: trancate,
+        stripTags: stripTags,
+        formatDate: formatDate,
+        select: select
+    },
     defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
@@ -65,5 +85,5 @@ app.use('/stories', story);
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`Server started on port ${port}`)
+    console.log(`Server started on port ${port}`);
 });

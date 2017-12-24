@@ -22,7 +22,7 @@ module.exports = function(passport) {
                 lastName: profile.name.familyName,
                 email: profile.emails[0].value,
                 image: image
-            }
+            };
 
             // Check for existing user
             User.findOne({
@@ -37,7 +37,7 @@ module.exports = function(passport) {
                         .save()
                         .then(user => done(null, user));
                 }
-            })
+            });
         })
     );
 
@@ -48,4 +48,4 @@ module.exports = function(passport) {
     passport.deserializeUser((id, done) => {
         User.findById(id).then(user => done(null, user));
     });
-}
+};
