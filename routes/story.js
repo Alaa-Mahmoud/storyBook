@@ -28,7 +28,7 @@ router.post('/', (req, res) => {
         title: req.body.title,
         body: req.body.body,
         status: req.body.status,
-        allowComments: allowComments,
+        allowComment: allowComments,
         user: req.user.id,
     };
     new Story(newStory).save().then((story) => {
@@ -39,7 +39,7 @@ router.post('/', (req, res) => {
 
 //show single story
 router.get('/show/:id', (req, res) => {
-    Story.findOne({ _id: req.params.id }).populate('user').then((story) => {
+    Story.findOne({ _id: req.params.id }).populate('user').populate('comments.commentUser').then((story) => {
         res.render('stories/show', { story: story });
     });
 });
@@ -66,7 +66,7 @@ router.put('/:id', (req, res) => {
         story.title = req.body.title;
         story.body = req.body.body;
         story.status = req.body.status;
-        story.allowComments = req.body.allowComments;
+        story.allowComment = req.body.allowComments;
 
         story.save().then(newStory => {
             res.redirect('/dashboard');
@@ -81,6 +81,24 @@ router.delete('/:id', (req, res) => {
     });
 
 });
+
+//add comment
+
+router.post('/comment/:id', (req, res) => {
+    Story.findOne({ _id: req.params.id }).then((story) => {
+        const newComment = {
+            commentBody: req.body.commentBody,
+            commentUser: req.user.id
+        };
+        // push to comments arry to the top 
+        story.comments.unshift(newComment);
+        story.save().then((newStory) => {
+            res.redirect(`/stories/show/${newStory.id}`);
+        });
+    });
+});
+
+
 
 
 module.exports = router;
