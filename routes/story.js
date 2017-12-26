@@ -5,7 +5,7 @@ const Story = require('../models/story');
 
 // story index
 router.get('/', (req, res) => {
-    Story.find({ status: 'public' }).populate('user').then((stories) => {
+    Story.find({ status: 'public' }).populate('user').sort({ date: 'desc' }).then((stories) => {
         res.render('stories/index', { stories: stories });
     });
 
@@ -47,7 +47,12 @@ router.get('/show/:id', (req, res) => {
 //edit story form
 router.get('/edit/:id', (req, res) => {
     Story.findOne({ _id: req.params.id }).then((story) => {
-        res.render('stories/edit', { story: story });
+        // control that only story's user have to edit it's own story only 
+        if (story.user != req.user.id) {
+            res.redirect('/stories');
+        } else {
+            res.render('stories/edit', { story: story });
+        }
     });
 
 });
