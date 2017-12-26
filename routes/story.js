@@ -39,9 +39,21 @@ router.post('/', (req, res) => {
 
 //show single story
 router.get('/show/:id', (req, res) => {
-    Story.findOne({ _id: req.params.id }).populate('user').populate('comments.commentUser').then((story) => {
-        res.render('stories/show', { story: story });
-    });
+    Story.findOne({ _id: req.params.id }).populate('user').populate('comments.commentUser')
+        .then((story) => {
+            if (story.status == 'public') {
+                res.render('stories/show', { story: story });
+
+            } else {
+                if (req.user && req.user.id == story.user.id) {
+                    res.render('stories/show', { story: story });
+
+                } else {
+                    res.redirect('/stories');
+                }
+            }
+
+        });
 });
 
 //edit story form
@@ -104,6 +116,22 @@ router.post('/comment/:id', (req, res) => {
 });
 
 
+// list story from specific user 
+
+router.get('/user/:userId', (req, res) => {
+    Story.find({ user: req.params.userId, status: 'public' }).populate('user').then((stories) => {
+        res.render('stories/index', { stories: stories });
+    });
+});
+
+
+// logedin user stories 
+
+router.get('/my', ensureAuthenticated, (req, res) => {
+    Story.find({ user: req.user.id }).populate('user').then((stories) => {
+        res.render('stories/index', { stories: stories });
+    });
+});
 
 
 module.exports = router;
